@@ -1,8 +1,6 @@
 import requests
 import time
 import random
-import datetime
-import json
 
 def read_data(filename):
     with open(filename, 'r') as file:
@@ -10,7 +8,11 @@ def read_data(filename):
 
 def send_request(url, headers, payload):
     response = requests.post(url, headers=headers, json=payload)
-    return response.status_code == 200
+    if response.status_code == 200:
+        return True
+    else:
+        print(f'Gagal: {response.text}')
+        return False
 
 def countdown_timer(seconds, task_name):
     while seconds:
@@ -97,6 +99,8 @@ def claim_tap_guru(account_token, user_agent):
     payload = {}
     if send_request(url, headers, payload):
         print(f'Tap Guru claimed for token {account_token}.')
+    else:
+        print(f'Tap Guru claim failed for token {account_token}.')
 
 def claim_full_tank_energy(account_token, user_agent):
     url = 'https://xaptapbot.exaprotocol.com/api/fullTank/'
@@ -124,6 +128,8 @@ def claim_full_tank_energy(account_token, user_agent):
     payload = {}
     if send_request(url, headers, payload):
         print(f'Full Tank Energy claimed for token {account_token}.')
+    else:
+        print(f'Full Tank Energy claim failed for token {account_token}.')
 
 def main():
     account_tokens = read_data('data.txt')
