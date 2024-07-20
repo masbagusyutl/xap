@@ -2,6 +2,7 @@ import requests
 import time
 import random
 import datetime
+import json
 
 def read_data(filename):
     with open(filename, 'r') as file:
@@ -20,7 +21,22 @@ def countdown_timer(seconds, task_name):
         seconds -= 1
     print()
 
-def tap_tap_task(account_token):
+def generate_random_user_agent():
+    android_versions = ['10', '11', '12', '13']
+    device_models = [
+        'vivo 2019', 'Samsung Galaxy S21', 'OnePlus 9', 'Google Pixel 6',
+        'Xiaomi Mi 11', 'Huawei P40', 'Sony Xperia 5', 'Oppo Find X3'
+    ]
+    chrome_versions = ['91.0.4472.120', '92.0.4515.131', '93.0.4577.62', '94.0.4606.71']
+    
+    android_version = random.choice(android_versions)
+    device_model = random.choice(device_models)
+    chrome_version = random.choice(chrome_versions)
+    
+    user_agent = f'Mozilla/5.0 (Linux; Android {android_version}; {device_model} Build/SP1A.210812.003; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/{chrome_version} Mobile Safari/537.36'
+    return user_agent
+
+def tap_tap_task(account_token, user_agent):
     url = 'https://xaptapbot.exaprotocol.com/api/tap/'
     headers = {
         'Accept': 'application/json, text/plain, */*',
@@ -40,7 +56,7 @@ def tap_tap_task(account_token):
         'Sec-Fetch-Dest': 'empty',
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-origin',
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; vivo 2019 Build/SP1A.210812.003; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/126.0.6478.134 Mobile Safari/537.36',
+        'User-Agent': user_agent,
         'X-Requested-With': 'org.telegram.plus'
     }
     points = 0
@@ -55,7 +71,7 @@ def tap_tap_task(account_token):
         time.sleep(random.uniform(0.5, 1.5))
     print(f'Tap Tap task completed for token {account_token} with {points} points.')
 
-def claim_tap_guru(account_token):
+def claim_tap_guru(account_token, user_agent):
     url = 'https://xaptapbot.exaprotocol.com/api/tappingGuru/'
     headers = {
         'Accept': 'application/json, text/plain, */*',
@@ -75,14 +91,14 @@ def claim_tap_guru(account_token):
         'Sec-Fetch-Dest': 'empty',
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-origin',
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; vivo 2019 Build/SP1A.210812.003; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/126.0.6478.134 Mobile Safari/537.36',
+        'User-Agent': user_agent,
         'X-Requested-With': 'org.telegram.plus'
     }
     payload = {}
     if send_request(url, headers, payload):
         print(f'Tap Guru claimed for token {account_token}.')
 
-def claim_full_tank_energy(account_token):
+def claim_full_tank_energy(account_token, user_agent):
     url = 'https://xaptapbot.exaprotocol.com/api/fullTank/'
     headers = {
         'Accept': 'application/json, text/plain, */*',
@@ -102,7 +118,7 @@ def claim_full_tank_energy(account_token):
         'Sec-Fetch-Dest': 'empty',
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-origin',
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; vivo 2019 Build/SP1A.210812.003; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/126.0.6478.134 Mobile Safari/537.36',
+        'User-Agent': user_agent,
         'X-Requested-With': 'org.telegram.plus'
     }
     payload = {}
@@ -113,26 +129,35 @@ def main():
     account_tokens = read_data('data.txt')
     total_accounts = len(account_tokens)
     
+    user_agents = [generate_random_user_agent() for _ in account_tokens]
+    
     while True:
-        for i, token in enumerate(account_tokens):
-            print(f'Processing account {i+1}/{total_accounts} with token {token}')
-            tap_tap_task(token)
+        print(f'Starting Tap Tap task for {total_accounts} accounts.')
+        for i, (token, user_agent) in enumerate(zip(account_tokens, user_agents)):
+            print(f'Processing Tap Tap for account {i+1}/{total_accounts} with token {token} and user agent {user_agent}')
+            tap_tap_task(token, user_agent)
             time.sleep(5)  # Delay between account switches
+        print('All Tap Tap tasks completed.')
         
         countdown_timer(600, 'Tap Tap')  # 10-minute countdown after all accounts are processed
         
-        for token in account_tokens:
-            claim_full_tank_energy(token)
+        print(f'Starting Full Tank Energy task for {total_accounts} accounts.')
+        for i, (token, user_agent) in enumerate(zip(account_tokens, user_agents)):
+            print(f'Processing Full Tank Energy for account {i+1}/{total_accounts} with token {token} and user agent {user_agent}')
+            claim_full_tank_energy(token, user_agent)
             time.sleep(5)  # Delay between account switches
+        print('All Full Tank Energy tasks completed.')
+        
         countdown_timer(43200, 'Full Tank Energy')  # 12-hour countdown for Full Tank Energy
         
-        for token in account_tokens:
-            claim_tap_guru(token)
+        print(f'Starting Tap Guru task for {total_accounts} accounts.')
+        for i, (token, user_agent) in enumerate(zip(account_tokens, user_agents)):
+            print(f'Processing Tap Guru for account {i+1}/{total_accounts} with token {token} and user agent {user_agent}')
+            claim_tap_guru(token, user_agent)
             time.sleep(5)  # Delay between account switches
-        next_claim_date = datetime.datetime.now() + datetime.timedelta(days=1)
-        while datetime.datetime.now() < next_claim_date:
-            remaining_time = (next_claim_date - datetime.datetime.now()).total_seconds()
-            countdown_timer(int(remaining_time), 'Tap Guru')  # 1-day countdown for Tap Guru
+        print('All Tap Guru tasks completed.')
+        
+        countdown_timer(86400, 'Tap Guru')  # 1-day countdown for Tap Guru
 
 if __name__ == "__main__":
     main()
